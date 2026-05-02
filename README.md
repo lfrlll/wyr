@@ -22,6 +22,10 @@ DEFAULT_MODEL=gemini-3.1-pro-preview
 AVAILABLE_MODELS=gemini-3.1-pro-preview,gemini-2.5-pro,gemini-2.5-flash,gpt-4.1,gpt-4.1-mini,claude-sonnet-4,deepseek-chat
 APP_OWNER_NAME=你的名字
 RECIPIENT_NAME=王悦然
+GITHUB_NOVEL_TOKEN=replace_with_github_token
+GITHUB_NOVEL_REPO=lfrlll/wyr
+GITHUB_NOVEL_BRANCH=main
+GITHUB_NOVEL_PATH_PREFIX=novels
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 ```
 
@@ -67,3 +71,18 @@ DATABASE_PUBLIC_URL=${{Postgres.DATABASE_PUBLIC_URL}}
 ```
 
 启动命令会在 `DATABASE_URL` 为空时自动使用 `DATABASE_PUBLIC_URL`。
+
+## 生成小说归档到 GitHub
+
+生成完成后，后端会自动把小说正文保存为 Markdown 文件到 GitHub。此功能不改变前端。
+
+在 Railway 网站服务 Variables 里配置：
+
+```env
+GITHUB_NOVEL_TOKEN=你的 GitHub fine-grained token
+GITHUB_NOVEL_REPO=lfrlll/wyr
+GITHUB_NOVEL_BRANCH=main
+GITHUB_NOVEL_PATH_PREFIX=novels
+```
+
+`GITHUB_NOVEL_TOKEN` 需要对目标仓库有 `Contents: Read and write` 权限。未配置 token 时，归档会跳过，不影响小说生成。

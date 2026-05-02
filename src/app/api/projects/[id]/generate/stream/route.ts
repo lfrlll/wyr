@@ -12,6 +12,7 @@ import {
 import { parseModelJson } from "@/lib/json-repair";
 import { sendSse, streamHeaders } from "@/lib/sse";
 import { assertSafeNovelInput } from "@/lib/safety";
+import { archiveProjectToGitHub } from "@/lib/github-archive";
 
 export const runtime = "nodejs";
 
@@ -165,6 +166,9 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
           } else if (!setting.firstProjectId) {
             await db.appSetting.update({ where: { id: "singleton" }, data: { firstProjectId: project.id } });
           }
+          await archiveProjectToGitHub(project.id).catch((error) => {
+            console.error("GitHub novel archive failed", error);
+          });
           sendSse(controller, "done", { projectId: project.id });
         } catch (error) {
           await db.project.update({ where: { id: params.id }, data: { status: "FAILED" } }).catch(() => undefined);
