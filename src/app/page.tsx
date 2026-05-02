@@ -19,9 +19,6 @@ export default function HomePage() {
             <Link className="btn btn-primary" href="/studio">
               开始写小说 <ArrowRight size={18} />
             </Link>
-            <Link className="btn btn-secondary" href="/settings">
-              配置表白信
-            </Link>
           </div>
         </div>
 

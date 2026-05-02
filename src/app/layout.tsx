@@ -20,9 +20,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link className="rounded-lg px-3 py-2 hover:bg-white/70" href="/studio">
                 创作
               </Link>
-              <Link className="rounded-lg px-3 py-2 hover:bg-white/70" href="/settings">
-                设置
-              </Link>
             </nav>
           </div>
         </header>
