@@ -11,6 +11,7 @@ import { OutlineEditor } from "@/components/OutlineEditor";
 import { ProgressPanel } from "@/components/ProgressPanel";
 import { SkillSelector } from "@/components/SkillSelector";
 import { StreamOutput } from "@/components/StreamOutput";
+import { readJson } from "@/lib/http-client";
 import { defaultSkillIds } from "@/lib/novel-skills";
 
 type StreamEvent = {
@@ -91,10 +92,11 @@ export default function StudioPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-    const data = await response.json();
+    const data = await readJson<{ error?: string; project?: { id: string } }>(response);
     if (!response.ok) throw new Error(data.error || "创建项目失败");
+    if (!data.project?.id) throw new Error("创建项目失败：没有收到项目 ID");
     setProjectId(data.project.id);
-    return data.project.id as string;
+    return data.project.id;
   }, [modelId, projectId, sourceText, title]);
 
   async function generateOutline() {
@@ -130,7 +132,7 @@ export default function StudioPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ editedOutline: outline })
       });
-      const data = await response.json();
+      const data = await readJson<{ error?: string }>(response);
       if (!response.ok) throw new Error(data.error || "保存失败");
       setStep(2);
     } catch (err) {
@@ -147,7 +149,7 @@ export default function StudioPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ selectedSkillIds, targetWordCount, chapterWordCount })
     });
-    const data = await response.json();
+    const data = await readJson<{ error?: string }>(response);
     if (!response.ok) throw new Error(data.error || "保存 Skill 失败");
     setStep(3);
     return id;
@@ -194,7 +196,7 @@ export default function StudioPage() {
       return;
     }
     if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
+      const data = await readJson<{ error?: string }>(response);
       setError(data.error || "导出失败");
       return;
     }
@@ -214,13 +216,15 @@ export default function StudioPage() {
   async function requestGate(action: "view" | "download") {
     if (!projectId) return;
     setPendingAction(action);
-    const status = await fetch(`/api/projects/${projectId}/gate-status`).then((response) => response.json());
+    const status = await fetch(`/api/projects/${projectId}/gate-status`).then((response) =>
+      readJson<{ confessionRequired?: boolean; title: string; body: string; recipientName: string }>(response)
+    );
     if (status.confessionRequired) {
       setGateInfo({ title: status.title, body: status.body, recipientName: status.recipientName });
       return;
     }
-    const message = await fetch("/api/gate/encouragement").then((response) => response.json());
-    setEncouragement(message.message);
+    const message = await fetch("/api/gate/encouragement").then((response) => readJson<{ message?: string }>(response));
+    setEncouragement(message.message || "");
   }
 
   async function completeConfession() {

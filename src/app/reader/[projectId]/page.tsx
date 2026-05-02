@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ConfessionGateModal } from "@/components/ConfessionGateModal";
 import { EncouragementModal } from "@/components/EncouragementModal";
+import { readJson } from "@/lib/http-client";
 
 type Chapter = {
   id: string;
@@ -36,19 +37,21 @@ export default function ReaderPage() {
   useEffect(() => {
     if (!projectId) return;
     fetch(`/api/projects/${projectId}`)
-      .then((response) => response.json())
-      .then((data) => setProject(data.project))
+      .then((response) => readJson<{ project?: Project }>(response))
+      .then((data) => {
+        if (data.project) setProject(data.project);
+      })
       .catch(() => undefined);
 
     fetch(`/api/projects/${projectId}/gate-status`)
-      .then((response) => response.json())
+      .then((response) => readJson<{ confessionRequired?: boolean; title: string; body: string; recipientName: string }>(response))
       .then(async (status) => {
         if (status.confessionRequired) {
           setGateInfo({ title: status.title, body: status.body, recipientName: status.recipientName });
           return;
         }
-        const message = await fetch("/api/gate/encouragement").then((response) => response.json());
-        setEncouragement(message.message);
+        const message = await fetch("/api/gate/encouragement").then((response) => readJson<{ message?: string }>(response));
+        setEncouragement(message.message || "");
       })
       .catch(() => setAllowed(true));
   }, [projectId]);

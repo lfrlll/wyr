@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { readJson } from "@/lib/http-client";
 
 type ModelSelectorProps = {
   value: string;
@@ -12,7 +13,7 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
 
   useEffect(() => {
     fetch("/api/models")
-      .then((response) => response.json())
+      .then((response) => readJson<{ models?: string[] }>(response))
       .then((data) => {
         const nextModels = Array.isArray(data.models) ? data.models : [];
         setModels(nextModels);

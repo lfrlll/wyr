@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
+import { readJson } from "@/lib/http-client";
 
 export default function SettingsPage() {
   const [locked, setLocked] = useState(false);
@@ -20,7 +21,11 @@ export default function SettingsPage() {
       setLocked(true);
       return;
     }
-    const data = await response.json();
+    const data = await readJson<{ setting?: { recipientName: string; confessionTitle: string; confessionBody?: string | null }; renderedBody?: string }>(response);
+    if (!data.setting) {
+      setLocked(true);
+      return;
+    }
     setRecipientName(data.setting.recipientName);
     setConfessionTitle(data.setting.confessionTitle);
     setConfessionBody(data.setting.confessionBody || "");
@@ -46,7 +51,7 @@ export default function SettingsPage() {
       setLocked(true);
       return;
     }
-    const data = await response.json();
+    const data = await readJson<{ renderedBody?: string }>(response);
     setRenderedBody(data.renderedBody || "");
     setSaved(response.ok);
     window.setTimeout(() => setSaved(false), 1800);

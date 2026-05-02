@@ -2,6 +2,7 @@
 
 import { FileUp } from "lucide-react";
 import { useState } from "react";
+import { readJson } from "@/lib/http-client";
 
 type DocxUploaderProps = {
   projectId: string | null;
@@ -21,7 +22,7 @@ export function DocxUploader({ projectId, ensureProject, onUploaded }: DocxUploa
       const formData = new FormData();
       formData.append("file", file);
       const response = await fetch(`/api/projects/${id}/upload-docx`, { method: "POST", body: formData });
-      const data = await response.json();
+      const data = await readJson<{ error?: string; text?: string }>(response);
       if (!response.ok) throw new Error(data.error || "上传失败");
       onUploaded(data.text || "");
     } finally {
