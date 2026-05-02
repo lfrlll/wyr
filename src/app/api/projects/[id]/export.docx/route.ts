@@ -19,8 +19,9 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
 
   const buffer = await exportProjectDocx(project);
+  const body = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
   await db.exportLog.create({ data: { projectId: project.id, type: "docx" } });
-  return new Response(buffer, {
+  return new Response(body, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "Content-Disposition": `attachment; filename="${safeDocxFilename(project.id)}"`
