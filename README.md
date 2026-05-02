@@ -52,10 +52,10 @@ APP_OWNER_NAME=你的名字
 RECIPIENT_NAME=王悦然
 ```
 
-5. Railway 会读取 `railway.json`，构建时执行 `npm run build`，启动时执行：
+5. Railway 会读取 `railway.json`，构建时执行 `npm run build`，启动时同步 Prisma schema 并启动服务：
 
 ```bash
-npx prisma migrate deploy && npm run start
+npx prisma db push && npm run start
 ```
 
 注意：不要把真实 API Key 写进 Git 仓库，只放在 Railway Variables。
