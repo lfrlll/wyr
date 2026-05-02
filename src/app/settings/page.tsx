@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Save } from "lucide-react";
+import { RotateCcw, Save } from "lucide-react";
 import { readJson } from "@/lib/http-client";
 
 export default function SettingsPage() {
@@ -12,6 +12,7 @@ export default function SettingsPage() {
   const [confessionBody, setConfessionBody] = useState("");
   const [renderedBody, setRenderedBody] = useState("");
   const [saved, setSaved] = useState(false);
+  const [resetSaved, setResetSaved] = useState(false);
 
   async function loadSettings(code = accessCode) {
     const response = await fetch("/api/settings", {
@@ -55,6 +56,20 @@ export default function SettingsPage() {
     setRenderedBody(data.renderedBody || "");
     setSaved(response.ok);
     window.setTimeout(() => setSaved(false), 1800);
+  }
+
+  async function resetGate() {
+    if (!window.confirm("确定要让表白信下一次查看/下载时重新出现吗？")) return;
+    const response = await fetch("/api/settings/reset-gate", {
+      method: "POST",
+      headers: accessCode ? { "x-owner-access-code": accessCode } : {}
+    });
+    if (response.status === 401) {
+      setLocked(true);
+      return;
+    }
+    setResetSaved(response.ok);
+    window.setTimeout(() => setResetSaved(false), 2200);
   }
 
   if (locked) {
@@ -116,6 +131,15 @@ export default function SettingsPage() {
         <p className="text-sm text-ink/60">预览</p>
         <h2 className="mt-1 text-2xl font-semibold text-ink">{confessionTitle}</h2>
         <div className="prose-text mt-5 rounded-xl border border-ink/10 bg-paper/70 p-5 text-sm text-ink/80">{renderedBody}</div>
+        <div className="mt-5 border-t border-ink/10 pt-5">
+          <h3 className="font-semibold text-ink">惊喜出现次数</h3>
+          <p className="mt-2 text-sm leading-6 text-ink/60">重置后，下一次查看正文或下载 Word 时会重新出现这封信。</p>
+          <button className="btn btn-secondary mt-4" onClick={resetGate}>
+            <RotateCcw size={18} />
+            重置表白信出现状态
+          </button>
+          {resetSaved && <p className="mt-3 text-sm text-sage">已重置，下次会重新出现。</p>}
+        </div>
       </section>
     </main>
   );
