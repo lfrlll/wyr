@@ -95,6 +95,32 @@ export async function createChatCompletionText(input: StreamInput) {
   return full;
 }
 
+export async function createChatCompletionTextNonStream(input: StreamInput) {
+  const { baseUrl, apiKey, defaultModel } = await getLlmRuntimeConfig();
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: input.model || defaultModel,
+      messages: input.messages,
+      temperature: input.temperature ?? 0.75,
+      max_tokens: input.maxTokens,
+      stream: false
+    })
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(text || `模型请求失败：${response.status}`);
+  }
+
+  const data = await response.json();
+  return String(data.choices?.[0]?.message?.content || "").trim();
+}
+
 export async function listModels() {
   let config: Awaited<ReturnType<typeof getLlmRuntimeConfig>>;
   try {

@@ -19,3 +19,11 @@ export const encouragements = [
 export function getRandomEncouragement(): string {
   return encouragements[Math.floor(Math.random() * encouragements.length)] ?? encouragements[0];
 }
+
+export function cleanEncouragementMessage(message: string) {
+  return message
+    .replace(/^["“”']+|["“”']+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+}

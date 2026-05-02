@@ -223,7 +223,7 @@ export default function StudioPage() {
       setGateInfo({ title: status.title, body: status.body, recipientName: status.recipientName });
       return;
     }
-    const message = await fetch("/api/gate/encouragement").then((response) => readJson<{ message?: string }>(response));
+    const message = await fetch(`/api/gate/encouragement?projectId=${encodeURIComponent(projectId)}`).then((response) => readJson<{ message?: string }>(response));
     setEncouragement(message.message || "");
   }
 

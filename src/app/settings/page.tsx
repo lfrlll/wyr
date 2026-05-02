@@ -10,6 +10,7 @@ export default function SettingsPage() {
   const [recipientName, setRecipientName] = useState("王悦然");
   const [confessionTitle, setConfessionTitle] = useState("给王悦然的一封信");
   const [confessionBody, setConfessionBody] = useState("");
+  const [recipientProfile, setRecipientProfile] = useState("");
   const [renderedBody, setRenderedBody] = useState("");
   const [llmBaseUrl, setLlmBaseUrl] = useState("");
   const [llmApiKey, setLlmApiKey] = useState("");
@@ -29,7 +30,7 @@ export default function SettingsPage() {
       return;
     }
     const data = await readJson<{
-      setting?: { recipientName: string; confessionTitle: string; confessionBody?: string | null };
+      setting?: { recipientName: string; confessionTitle: string; confessionBody?: string | null; recipientProfile?: string | null };
       editableBody?: string;
       renderedBody?: string;
       llmConfig?: {
@@ -47,6 +48,7 @@ export default function SettingsPage() {
     setRecipientName(data.setting.recipientName);
     setConfessionTitle(data.setting.confessionTitle);
     setConfessionBody(data.editableBody || data.setting.confessionBody || "");
+    setRecipientProfile(data.setting.recipientProfile || "");
     setRenderedBody(data.renderedBody || "");
     setLlmBaseUrl(data.llmConfig?.llmBaseUrl || "");
     setHasLlmApiKey(Boolean(data.llmConfig?.hasLlmApiKey));
@@ -73,6 +75,7 @@ export default function SettingsPage() {
         recipientName,
         confessionTitle,
         confessionBody,
+        recipientProfile,
         llmBaseUrl,
         llmApiKey,
         defaultModel,
@@ -157,6 +160,15 @@ export default function SettingsPage() {
           <label>
             <span className="mb-2 block text-sm font-semibold text-ink">完整信件正文</span>
             <textarea className="field min-h-96 leading-7" value={confessionBody} onChange={(event) => setConfessionBody(event.target.value)} placeholder="这里编辑整封信，保存后会覆盖旧版本。" />
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-semibold text-ink">她的人物画像</span>
+            <textarea
+              className="field min-h-40 leading-7"
+              value={recipientProfile}
+              onChange={(event) => setRecipientProfile(event.target.value)}
+              placeholder="写下她的性格、可爱之处、容易不自信的地方、你希望怎样鼓励她。后续查看/下载前的鼓励语会结合这里和小说内容生成。"
+            />
           </label>
           <div className="flex flex-wrap gap-3">
             <button className="btn btn-primary" onClick={save}>

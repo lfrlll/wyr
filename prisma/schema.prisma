@@ -53,6 +53,7 @@ model AppSetting {
   llmApiKey             String?
   defaultModel          String?
   availableModels       String?
+  recipientProfile      String?
   confessionCompletedAt DateTime?
   firstProjectId        String?
   createdAt             DateTime  @default(now())

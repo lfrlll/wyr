@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
-import { getRandomEncouragement } from "@/lib/encouragement";
+import { generateDynamicEncouragement } from "@/lib/dynamic-encouragement";
 
-export async function GET() {
-  return NextResponse.json({ message: getRandomEncouragement() });
+export const runtime = "nodejs";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const projectId = searchParams.get("projectId");
+  return NextResponse.json({ message: await generateDynamicEncouragement(projectId) });
 }
