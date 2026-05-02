@@ -19,7 +19,7 @@ npm run dev
 LLM_BASE_URL=https://yunwu.ai/v1
 LLM_API_KEY=replace_me
 DEFAULT_MODEL=gemini-3.1-pro-preview
-AVAILABLE_MODELS=gemini-3.1-pro-preview
+AVAILABLE_MODELS=gemini-3.1-pro-preview,gemini-2.5-pro,gemini-2.5-flash,gpt-4.1,gpt-4.1-mini,claude-sonnet-4,deepseek-chat
 APP_OWNER_NAME=你的名字
 RECIPIENT_NAME=王悦然
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
@@ -47,7 +47,7 @@ DATABASE_PUBLIC_URL=${{Postgres.DATABASE_PUBLIC_URL}}
 LLM_BASE_URL=https://yunwu.ai/v1
 LLM_API_KEY=你的云雾 API Key
 DEFAULT_MODEL=gemini-3.1-pro-preview
-AVAILABLE_MODELS=gemini-3.1-pro-preview
+AVAILABLE_MODELS=gemini-3.1-pro-preview,gemini-2.5-pro,gemini-2.5-flash,gpt-4.1,gpt-4.1-mini,claude-sonnet-4,deepseek-chat
 APP_OWNER_NAME=你的名字
 RECIPIENT_NAME=王悦然
 ```

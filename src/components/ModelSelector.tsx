@@ -23,15 +23,26 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
   }, [onChange, value]);
 
   return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-ink">模型配置</span>
-      <select className="field" value={value} onChange={(event) => onChange(event.target.value)}>
-        {(models.length ? models : [value || "gpt-4.1"]).map((model) => (
-          <option key={model} value={model}>
-            {model}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="grid gap-3">
+      <label className="block">
+        <span className="mb-2 block text-sm font-semibold text-ink">模型配置</span>
+        <select className="field" value={value} onChange={(event) => onChange(event.target.value)}>
+          {(models.length ? models : [value || "gpt-4.1"]).map((model) => (
+            <option key={model} value={model}>
+              {model}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="block">
+        <span className="mb-2 block text-sm font-semibold text-ink">手动模型 ID</span>
+        <input
+          className="field"
+          value={value}
+          onChange={(event) => onChange(event.target.value.trim())}
+          placeholder="粘贴云雾后台可用的模型 ID"
+        />
+      </label>
+    </div>
   );
 }
