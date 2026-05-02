@@ -49,6 +49,10 @@ model AppSetting {
   recipientName         String    @default("王悦然")
   confessionTitle       String    @default("给王悦然的一封信")
   confessionBody        String?
+  llmBaseUrl            String?
+  llmApiKey             String?
+  defaultModel          String?
+  availableModels       String?
   confessionCompletedAt DateTime?
   firstProjectId        String?
   createdAt             DateTime  @default(now())

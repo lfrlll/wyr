@@ -1,3 +1,5 @@
+import { db } from "@/lib/db";
+
 type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -12,17 +14,32 @@ type StreamInput = {
 
 export class LlmConfigError extends Error {}
 
-function getConfig() {
-  const baseUrl = process.env.LLM_BASE_URL;
-  const apiKey = process.env.LLM_API_KEY;
+function clean(value?: string | null) {
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed === "replace_me" || trimmed === "replace_with_new_yunwu_key") return "";
+  return trimmed.replace(/^["']|["']$/g, "");
+}
+
+export async function getLlmRuntimeConfig() {
+  const setting = await db.appSetting.findUnique({ where: { id: "singleton" } }).catch(() => null);
+  const baseUrl = clean(setting?.llmBaseUrl) || clean(process.env.LLM_BASE_URL);
+  const apiKey = clean(setting?.llmApiKey) || clean(process.env.LLM_API_KEY);
+  const defaultModel = clean(setting?.defaultModel) || clean(process.env.DEFAULT_MODEL) || "gpt-4.1";
+  const availableModels = clean(setting?.availableModels) || clean(process.env.AVAILABLE_MODELS);
+
   if (!baseUrl || !apiKey || apiKey === "replace_me") {
     throw new LlmConfigError("请先配置中转 API Key");
   }
-  return { baseUrl: baseUrl.replace(/\/$/, ""), apiKey };
+  return {
+    baseUrl: baseUrl.replace(/\/$/, ""),
+    apiKey,
+    defaultModel,
+    availableModels
+  };
 }
 
 export async function* createChatCompletionStream(input: StreamInput): AsyncGenerator<string> {
-  const { baseUrl, apiKey } = getConfig();
+  const { baseUrl, apiKey, defaultModel } = await getLlmRuntimeConfig();
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
@@ -30,7 +47,7 @@ export async function* createChatCompletionStream(input: StreamInput): AsyncGene
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: input.model || process.env.DEFAULT_MODEL || "gpt-4.1",
+      model: input.model || defaultModel,
       messages: input.messages,
       temperature: input.temperature ?? 0.75,
       max_tokens: input.maxTokens,
@@ -79,12 +96,23 @@ export async function createChatCompletionText(input: StreamInput) {
 }
 
 export async function listModels() {
-  const configured = process.env.AVAILABLE_MODELS?.split(",").map((item) => item.trim()).filter(Boolean);
+  let config: Awaited<ReturnType<typeof getLlmRuntimeConfig>>;
+  try {
+    config = await getLlmRuntimeConfig();
+  } catch {
+    const fallback = clean(process.env.DEFAULT_MODEL) || "gpt-4.1";
+    const configured = clean(process.env.AVAILABLE_MODELS)
+      ?.split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+    return configured?.length ? configured : [fallback];
+  }
+  const configured = config.availableModels?.split(",").map((item) => item.trim()).filter(Boolean);
   if (configured?.length) return configured;
 
-  const fallback = process.env.DEFAULT_MODEL || "gpt-4.1";
+  const fallback = config.defaultModel;
   try {
-    const { baseUrl, apiKey } = getConfig();
+    const { baseUrl, apiKey } = config;
     const response = await fetch(`${baseUrl}/models`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       cache: "no-store"

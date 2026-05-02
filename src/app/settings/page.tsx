@@ -11,6 +11,12 @@ export default function SettingsPage() {
   const [confessionTitle, setConfessionTitle] = useState("给王悦然的一封信");
   const [confessionBody, setConfessionBody] = useState("");
   const [renderedBody, setRenderedBody] = useState("");
+  const [llmBaseUrl, setLlmBaseUrl] = useState("");
+  const [llmApiKey, setLlmApiKey] = useState("");
+  const [hasLlmApiKey, setHasLlmApiKey] = useState(false);
+  const [apiKeySource, setApiKeySource] = useState("missing");
+  const [defaultModel, setDefaultModel] = useState("");
+  const [availableModels, setAvailableModels] = useState("");
   const [saved, setSaved] = useState(false);
   const [resetSaved, setResetSaved] = useState(false);
 
@@ -26,6 +32,13 @@ export default function SettingsPage() {
       setting?: { recipientName: string; confessionTitle: string; confessionBody?: string | null };
       editableBody?: string;
       renderedBody?: string;
+      llmConfig?: {
+        llmBaseUrl?: string;
+        hasLlmApiKey?: boolean;
+        apiKeySource?: string;
+        defaultModel?: string;
+        availableModels?: string;
+      };
     }>(response);
     if (!data.setting) {
       setLocked(true);
@@ -35,6 +48,12 @@ export default function SettingsPage() {
     setConfessionTitle(data.setting.confessionTitle);
     setConfessionBody(data.editableBody || data.setting.confessionBody || "");
     setRenderedBody(data.renderedBody || "");
+    setLlmBaseUrl(data.llmConfig?.llmBaseUrl || "");
+    setHasLlmApiKey(Boolean(data.llmConfig?.hasLlmApiKey));
+    setApiKeySource(data.llmConfig?.apiKeySource || "missing");
+    setDefaultModel(data.llmConfig?.defaultModel || "");
+    setAvailableModels(data.llmConfig?.availableModels || "");
+    setLlmApiKey("");
     setLocked(false);
   }
 
@@ -50,15 +69,30 @@ export default function SettingsPage() {
         "Content-Type": "application/json",
         ...(accessCode ? { "x-owner-access-code": accessCode } : {})
       },
-      body: JSON.stringify({ recipientName, confessionTitle, confessionBody })
+      body: JSON.stringify({
+        recipientName,
+        confessionTitle,
+        confessionBody,
+        llmBaseUrl,
+        llmApiKey,
+        defaultModel,
+        availableModels
+      })
     });
     if (response.status === 401) {
       setLocked(true);
       return;
     }
-    const data = await readJson<{ editableBody?: string; renderedBody?: string }>(response);
+    const data = await readJson<{
+      editableBody?: string;
+      renderedBody?: string;
+      llmConfig?: { hasLlmApiKey?: boolean; apiKeySource?: string };
+    }>(response);
     setConfessionBody(data.editableBody || confessionBody);
     setRenderedBody(data.renderedBody || "");
+    setHasLlmApiKey(Boolean(data.llmConfig?.hasLlmApiKey));
+    setApiKeySource(data.llmConfig?.apiKeySource || apiKeySource);
+    setLlmApiKey("");
     setSaved(response.ok);
     window.setTimeout(() => setSaved(false), 1800);
   }
@@ -138,11 +172,52 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-ink/10 bg-white/70 p-5">
-        <p className="text-sm text-ink/60">预览</p>
-        <h2 className="mt-1 text-2xl font-semibold text-ink">{confessionTitle}</h2>
-        <div className="prose-text mt-5 rounded-xl border border-ink/10 bg-paper/70 p-5 text-sm text-ink/80">{renderedBody}</div>
-        <div className="mt-5 border-t border-ink/10 pt-5">
+      <section className="space-y-5">
+        <div className="rounded-2xl border border-ink/10 bg-white/70 p-5">
+          <p className="text-sm text-ink/60">模型配置</p>
+          <h2 className="mt-1 text-2xl font-semibold text-ink">云雾 API</h2>
+          <div className="mt-5 grid gap-4">
+            <label>
+              <span className="mb-2 block text-sm font-semibold text-ink">中转 URL</span>
+              <input className="field" value={llmBaseUrl} onChange={(event) => setLlmBaseUrl(event.target.value.trim())} placeholder="https://yunwu.ai/v1" />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-semibold text-ink">API Key</span>
+              <input
+                className="field"
+                type="password"
+                value={llmApiKey}
+                onChange={(event) => setLlmApiKey(event.target.value.trim())}
+                placeholder={hasLlmApiKey ? `已配置，来源：${apiKeySource === "settings" ? "设置页" : "Railway 环境变量"}；留空不修改` : "粘贴新的 API Key"}
+              />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-semibold text-ink">默认模型</span>
+              <input className="field" value={defaultModel} onChange={(event) => setDefaultModel(event.target.value.trim())} placeholder="gemini-3.1-pro-preview" />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-semibold text-ink">可选模型列表</span>
+              <textarea
+                className="field min-h-28 leading-7"
+                value={availableModels}
+                onChange={(event) => setAvailableModels(event.target.value)}
+                placeholder="用英文逗号分隔，例如：gemini-3.1-pro-preview,gpt-5.2-2025-12-11"
+              />
+            </label>
+            <button className="btn btn-primary" onClick={save}>
+              <Save size={18} />
+              保存模型配置
+            </button>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-ink/10 bg-white/70 p-5">
+          <p className="text-sm text-ink/60">预览</p>
+          <h2 className="mt-1 text-2xl font-semibold text-ink">{confessionTitle}</h2>
+          <div className="prose-text mt-5 rounded-xl border border-ink/10 bg-paper/70 p-5 text-sm text-ink/80">{renderedBody}</div>
+        </div>
+
+        <div className="rounded-2xl border border-ink/10 bg-white/70 p-5">
           <h3 className="font-semibold text-ink">惊喜出现次数</h3>
           <p className="mt-2 text-sm leading-6 text-ink/60">重置后，下一次查看正文或下载 Word 时会重新出现这封信。</p>
           <button className="btn btn-secondary mt-4" onClick={resetGate}>
