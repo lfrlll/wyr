@@ -43,6 +43,7 @@ DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 
 ```env
 DATABASE_URL=${{Postgres.DATABASE_URL}}
+DATABASE_PUBLIC_URL=${{Postgres.DATABASE_PUBLIC_URL}}
 LLM_BASE_URL=https://yunwu.ai/v1
 LLM_API_KEY=你的云雾 API Key
 DEFAULT_MODEL=gemini-3.1-pro-preview
@@ -58,3 +59,11 @@ npx prisma migrate deploy && npm run start
 ```
 
 注意：不要把真实 API Key 写进 Git 仓库，只放在 Railway Variables。
+
+如果 Railway 无法解析 `DATABASE_URL=${{Postgres.DATABASE_URL}}`，可以只配置：
+
+```env
+DATABASE_PUBLIC_URL=${{Postgres.DATABASE_PUBLIC_URL}}
+```
+
+启动命令会在 `DATABASE_URL` 为空时自动使用 `DATABASE_PUBLIC_URL`。
