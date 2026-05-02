@@ -3,6 +3,9 @@ import { db } from "@/lib/db";
 const fallbackCustomBody = "这里留给我写下最想亲口告诉你的话。";
 
 export function buildConfessionBody(customBody?: string | null) {
+  const body = customBody?.trim();
+  if (body) return body;
+
   return `悦然：
 
 在你看到这份小说之前，我想先把这封信给你。

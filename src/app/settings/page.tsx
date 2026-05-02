@@ -22,14 +22,18 @@ export default function SettingsPage() {
       setLocked(true);
       return;
     }
-    const data = await readJson<{ setting?: { recipientName: string; confessionTitle: string; confessionBody?: string | null }; renderedBody?: string }>(response);
+    const data = await readJson<{
+      setting?: { recipientName: string; confessionTitle: string; confessionBody?: string | null };
+      editableBody?: string;
+      renderedBody?: string;
+    }>(response);
     if (!data.setting) {
       setLocked(true);
       return;
     }
     setRecipientName(data.setting.recipientName);
     setConfessionTitle(data.setting.confessionTitle);
-    setConfessionBody(data.setting.confessionBody || "");
+    setConfessionBody(data.editableBody || data.setting.confessionBody || "");
     setRenderedBody(data.renderedBody || "");
     setLocked(false);
   }
@@ -52,7 +56,8 @@ export default function SettingsPage() {
       setLocked(true);
       return;
     }
-    const data = await readJson<{ renderedBody?: string }>(response);
+    const data = await readJson<{ editableBody?: string; renderedBody?: string }>(response);
+    setConfessionBody(data.editableBody || confessionBody);
     setRenderedBody(data.renderedBody || "");
     setSaved(response.ok);
     window.setTimeout(() => setSaved(false), 1800);
@@ -116,13 +121,19 @@ export default function SettingsPage() {
             <input className="field" value={confessionTitle} onChange={(event) => setConfessionTitle(event.target.value)} />
           </label>
           <label>
-            <span className="mb-2 block text-sm font-semibold text-ink">你想亲口告诉她的话</span>
-            <textarea className="field min-h-64 leading-7" value={confessionBody} onChange={(event) => setConfessionBody(event.target.value)} placeholder="这里留给你写下最想亲口告诉她的话。" />
+            <span className="mb-2 block text-sm font-semibold text-ink">完整信件正文</span>
+            <textarea className="field min-h-96 leading-7" value={confessionBody} onChange={(event) => setConfessionBody(event.target.value)} placeholder="这里编辑整封信，保存后会覆盖旧版本。" />
           </label>
-          <button className="btn btn-primary" onClick={save}>
-            <Save size={18} />
-            保存设置
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button className="btn btn-primary" onClick={save}>
+              <Save size={18} />
+              保存并覆盖旧信
+            </button>
+            <button className="btn btn-secondary" onClick={() => loadSettings().catch(() => undefined)}>
+              <RotateCcw size={18} />
+              重新载入已保存内容
+            </button>
+          </div>
           {saved && <p className="text-sm text-sage">已保存。</p>}
         </div>
       </section>

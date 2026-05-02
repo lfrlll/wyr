@@ -16,7 +16,12 @@ export async function GET(request: Request) {
   if (denied) return denied;
 
   const setting = await getAppSetting();
-  return NextResponse.json({ setting, renderedBody: buildConfessionBody(setting.confessionBody) });
+  const renderedBody = buildConfessionBody(setting.confessionBody);
+  return NextResponse.json({
+    setting,
+    editableBody: setting.confessionBody?.trim() ? setting.confessionBody : renderedBody,
+    renderedBody
+  });
 }
 
 export async function PATCH(request: Request) {
@@ -38,5 +43,10 @@ export async function PATCH(request: Request) {
       confessionBody: String(body.confessionBody || "")
     }
   });
-  return NextResponse.json({ setting, renderedBody: buildConfessionBody(setting.confessionBody) });
+  const renderedBody = buildConfessionBody(setting.confessionBody);
+  return NextResponse.json({
+    setting,
+    editableBody: setting.confessionBody?.trim() ? setting.confessionBody : renderedBody,
+    renderedBody
+  });
 }
