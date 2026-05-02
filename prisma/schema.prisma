@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id                  String        @id @default(cuid())
+  title               String
+  sourceText          String
+  uploadedDocText     String?
+  outline             String?
+  editedOutline       String?
+  targetWordCount     Int           @default(120000)
+  chapterWordCount    Int           @default(4000)
+  modelId             String
+  selectedSkillIds    String        @default("[]")
+  status              String        @default("DRAFT")
+  continuityBible     String?
+  totalGeneratedChars Int           @default(0)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  chapters            Chapter[]
+  exportLogs          ExportLog[]
+}
+
+model Chapter {
+  id          String        @id @default(cuid())
+  projectId   String
+  index       Int
+  title       String
+  targetChars Int
+  content     String
+  summary     String?
+  status      String   @default("PENDING")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, index])
+  @@index([projectId])
+}
+
+model AppSetting {
+  id                    String    @id @default("singleton")
+  recipientName         String    @default("王悦然")
+  confessionTitle       String    @default("给王悦然的一封信")
+  confessionBody        String?
+  confessionCompletedAt DateTime?
+  firstProjectId        String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model ExportLog {
+  id        String   @id @default(cuid())
+  projectId String
+  type      String
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}

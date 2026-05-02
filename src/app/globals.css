@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #2d2933;
+  background: #fffaf7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background:
+    radial-gradient(circle at 8% 6%, rgba(184, 103, 124, 0.12), transparent 32rem),
+    linear-gradient(135deg, #fffaf7 0%, #f5f1ec 48%, #eef4f1 100%);
+  color: #2d2933;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+::selection {
+  background: rgba(184, 103, 124, 0.24);
+}
+
+.surface {
+  border: 1px solid rgba(45, 41, 51, 0.1);
+  background: rgba(255, 250, 247, 0.78);
+  box-shadow: 0 18px 60px rgba(52, 44, 59, 0.1);
+  backdrop-filter: blur(18px);
+}
+
+.field {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(45, 41, 51, 0.16);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.78rem 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.field:focus {
+  border-color: rgba(123, 90, 114, 0.58);
+  box-shadow: 0 0 0 4px rgba(123, 90, 114, 0.12);
+  background: #fff;
+}
+
+.btn {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 0.72rem 1rem;
+  font-weight: 650;
+  line-height: 1;
+  transition: transform 0.18s ease, background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.btn-primary {
+  background: #2d2933;
+  color: #fffaf7;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #403849;
+}
+
+.btn-secondary {
+  border-color: rgba(45, 41, 51, 0.14);
+  background: rgba(255, 255, 255, 0.78);
+  color: #2d2933;
+}
+
+.btn-soft {
+  background: rgba(184, 103, 124, 0.12);
+  color: #74384a;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(45, 41, 51, 0.1);
+  background: rgba(255, 255, 255, 0.62);
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: rgba(45, 41, 51, 0.72);
+}
+
+.prose-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.95;
+}
