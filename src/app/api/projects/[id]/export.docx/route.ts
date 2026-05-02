@@ -19,7 +19,8 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
 
   const buffer = await exportProjectDocx(project);
-  const body = new Blob([buffer], {
+  const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+  const body = new Blob([arrayBuffer], {
     type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
   });
   await db.exportLog.create({ data: { projectId: project.id, type: "docx" } });
