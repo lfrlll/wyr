@@ -29,6 +29,10 @@ type ChapterPlan = {
   }>;
 };
 
+type GenerateOptions = {
+  archiveToGitHub?: unknown;
+};
+
 function parseSkillIds(raw: string) {
   try {
     return JSON.parse(raw || "[]") as string[];
@@ -37,7 +41,10 @@ function parseSkillIds(raw: string) {
   }
 }
 
-export async function POST(_: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: { id: string } }) {
+  const options = (await request.json().catch(() => ({}))) as GenerateOptions;
+  const shouldArchiveToGitHub = options.archiveToGitHub === true;
+
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
       void (async () => {
@@ -166,9 +173,17 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
           } else if (!setting.firstProjectId) {
             await db.appSetting.update({ where: { id: "singleton" }, data: { firstProjectId: project.id } });
           }
-          await archiveProjectToGitHub(project.id).catch((error) => {
-            console.error("GitHub novel archive failed", error);
-          });
+          if (shouldArchiveToGitHub) {
+            sendSse(controller, "archive_start", {});
+            await archiveProjectToGitHub(project.id)
+              .then((result) => sendSse(controller, "archive_done", result))
+              .catch((error) => {
+                console.error("GitHub novel archive failed", error);
+                sendSse(controller, "archive_error", { message: error instanceof Error ? error.message : "GitHub 归档失败" });
+              });
+          } else {
+            sendSse(controller, "archive_skipped", {});
+          }
           sendSse(controller, "done", { projectId: project.id });
         } catch (error) {
           await db.project.update({ where: { id: params.id }, data: { status: "FAILED" } }).catch(() => undefined);

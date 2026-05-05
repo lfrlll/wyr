@@ -72,9 +72,9 @@ DATABASE_PUBLIC_URL=${{Postgres.DATABASE_PUBLIC_URL}}
 
 启动命令会在 `DATABASE_URL` 为空时自动使用 `DATABASE_PUBLIC_URL`。
 
-## 生成小说归档到 GitHub
+## 由写作者选择归档到 GitHub
 
-生成完成后，后端会自动把小说正文保存为 Markdown 文件到 GitHub。此功能不改变前端。
+工作台生成小说时，写作者可以通过“生成后归档 GitHub / 不归档 GitHub”按钮决定本次生成是否保存为 Markdown 文件到 GitHub。
 
 在 Railway 网站服务 Variables 里配置：
 
@@ -85,4 +85,4 @@ GITHUB_NOVEL_BRANCH=main
 GITHUB_NOVEL_PATH_PREFIX=novels
 ```
 
-`GITHUB_NOVEL_TOKEN` 需要对目标仓库有 `Contents: Read and write` 权限。未配置 token 时，归档会跳过，不影响小说生成。
+`GITHUB_NOVEL_TOKEN` 需要对目标仓库有 `Contents: Read and write` 权限。未配置 token 时，即使写作者选择归档，也会跳过 GitHub 写入，不影响小说生成。

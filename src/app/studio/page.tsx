@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Eye, Loader2, Save, Wand2 } from "lucide-react";
+import { Archive, Download, Eye, Loader2, Save, Wand2 } from "lucide-react";
 import { ConfessionGateModal } from "@/components/ConfessionGateModal";
 import { DocxUploader } from "@/components/DocxUploader";
 import { EncouragementModal } from "@/components/EncouragementModal";
@@ -73,6 +73,8 @@ export default function StudioPage() {
   const [gateInfo, setGateInfo] = useState<GateInfo | null>(null);
   const [pendingAction, setPendingAction] = useState<"view" | "download" | null>(null);
   const [encouragement, setEncouragement] = useState("");
+  const [archiveToGitHub, setArchiveToGitHub] = useState(false);
+  const [archiveStatus, setArchiveStatus] = useState("");
 
   const steps = useMemo(() => ["完整大纲", "Skill 与字数", "生成小说"], []);
 
@@ -165,9 +167,14 @@ export default function StudioPage() {
     setGeneratedChars(0);
     setPercent(0);
     setGeneratedDone(false);
+    setArchiveStatus("");
     try {
       const id = await saveSkills();
-      const response = await fetch(`/api/projects/${id}/generate/stream`, { method: "POST" });
+      const response = await fetch(`/api/projects/${id}/generate/stream`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archiveToGitHub })
+      });
       await readSse(response, ({ event, data }) => {
         if (event === "chapter_start") setCurrentChapter(`第 ${data.index} 章 ${data.title}`);
         if (event === "delta") setNovelOutput((prev) => prev + String(data.text || ""));
@@ -175,6 +182,12 @@ export default function StudioPage() {
           setGeneratedChars(Number(data.generatedChars || 0));
           setPercent(Number(data.percent || 0));
         }
+        if (event === "archive_start") setArchiveStatus("正在归档到 GitHub...");
+        if (event === "archive_done") {
+          setArchiveStatus(data.skipped ? "GitHub 未配置，已跳过归档" : `已归档到 GitHub：${String(data.path || "")}`);
+        }
+        if (event === "archive_skipped") setArchiveStatus("已按写作者选择跳过 GitHub 归档");
+        if (event === "archive_error") setArchiveStatus(`GitHub 归档失败：${String(data.message || "")}`);
         if (event === "error") setError(String(data.message || "小说生成失败"));
         if (event === "done") {
           setPercent(100);
@@ -330,6 +343,15 @@ export default function StudioPage() {
                   {busy === "novel" ? <Loader2 className="animate-spin" size={18} /> : <Wand2 size={18} />}
                   开始分章生成
                 </button>
+                <button
+                  className={`btn ${archiveToGitHub ? "btn-soft" : "btn-secondary"}`}
+                  disabled={busy === "novel"}
+                  aria-pressed={archiveToGitHub}
+                  onClick={() => setArchiveToGitHub((value) => !value)}
+                >
+                  <Archive size={18} />
+                  {archiveToGitHub ? "生成后归档 GitHub" : "不归档 GitHub"}
+                </button>
                 <button className="btn btn-secondary" disabled>
                   暂停
                 </button>
@@ -342,6 +364,7 @@ export default function StudioPage() {
                   下载 Word
                 </button>
               </div>
+              {archiveStatus && <p className="mt-3 text-sm text-ink/60">{archiveStatus}</p>}
             </div>
             <StreamOutput title="正文流式输出" content={novelOutput} placeholder="点击开始分章生成后，正文会实时出现在这里。" />
           </div>
